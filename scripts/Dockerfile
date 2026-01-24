@@ -1,5 +1,5 @@
 FROM alpine:3.16 AS builder
-LABEL maintainer="tindy.it@gmail.com"
+LABEL maintainer="icasture@gmail.com"
 ARG THREADS="4"
 ARG SHA=""
 
@@ -34,10 +34,13 @@ RUN set -xe && \
     cd toml11 && \
     cmake -DCMAKE_CXX_STANDARD=11 . && \
     make install -j $THREADS && \
-    cd .. && \
-    git clone https://github.com/tindy2013/subconverter --depth=1 && \
-    cd subconverter && \
-    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h;\
+    cd ..
+
+COPY . /subconverter
+WORKDIR /subconverter
+
+RUN set -xe && \
+    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h; \
     python3 -m ensurepip && \
     python3 -m pip install gitpython && \
     python3 scripts/update_rules.py -c scripts/rules_config.conf && \
@@ -46,7 +49,7 @@ RUN set -xe && \
 
 # build final image
 FROM alpine:3.16
-LABEL maintainer="tindy.it@gmail.com"
+LABEL maintainer="icasture@gmail.com"
 
 RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp
 
@@ -59,6 +62,6 @@ RUN echo $TZ > /etc/timezone
 
 # set entry
 WORKDIR /base
-CMD subconverter
+CMD ["subconverter"]
 
 EXPOSE 25500/tcp
