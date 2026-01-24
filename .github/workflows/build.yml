@@ -1,13 +1,17 @@
 name: GitHub CI
-on: 
+
+permissions:
+  contents: write
+
+on:
   push:
-    branches: [ master ]
+    branches: [ build/master ]
     tags:
       - '**'
   workflow_dispatch:
   pull_request:
 
-concurrency: 
+concurrency:
   group: ${{ github.ref }}-${{ github.workflow }}
   cancel-in-progress: true
 
@@ -91,7 +95,7 @@ jobs:
       with:
         files: ${{ matrix.artifact }}.tar.gz
         draft: true
-  
+
   windows_build:
     strategy:
       matrix:
