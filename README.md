@@ -2,14 +2,14 @@
 
 Utility to convert between various proxy subscription formats.
 
-[![Build Status](https://github.com/tindy2013/subconverter/actions/workflows/build.yml/badge.svg)](https://github.com/tindy2013/subconverter/actions)
-[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/tags)
-[![GitHub release](https://img.shields.io/github/release/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/releases)
-[![GitHub license](https://img.shields.io/github/license/tindy2013/subconverter.svg)](https://github.com/tindy2013/subconverter/blob/master/LICENSE)
+[![Build Status](https://github.com/icasture/subconverter/actions/workflows/build.yml/badge.svg)](https://github.com/icasture/subconverter/actions)
+[![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/icasture/subconverter.svg)](https://github.com/icasture/subconverter/tags)
+[![GitHub release](https://img.shields.io/github/release/icasture/subconverter.svg)](https://github.com/icasture/subconverter/releases)
+[![GitHub license](https://img.shields.io/github/license/icasture/subconverter.svg)](https://github.com/icasture/subconverter/blob/master/LICENSE)
 
-[Docker README](https://github.com/tindy2013/subconverter/blob/master/README-docker.md)
+[Docker README](https://github.com/icasture/subconverter/blob/master/README-docker.md)
 
-[中文文档](https://github.com/tindy2013/subconverter/blob/master/README-cn.md)
+[中文文档](https://github.com/icasture/subconverter/blob/master/README-cn.md)
 
 - [subconverter](#subconverter)
   - [Supported Types](#supported-types)
@@ -95,7 +95,7 @@ Finally subscribe this link in Clash and you are done!
 
 ## Advanced Usage
 
-Please refer to [中文文档](https://github.com/tindy2013/subconverter/blob/master/README-cn.md#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95).
+Please refer to [中文文档](https://github.com/icasture/subconverter/blob/master/README-cn.md#%E8%BF%9B%E9%98%B6%E7%94%A8%E6%B3%95).
 
 ## Auto Upload
 
