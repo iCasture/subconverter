@@ -3,15 +3,15 @@ match = "(?i:Bandwidth|expire|流量|时间|应急|过期)"
 emoji = "🏳️‍🌈"
 
 [[emoji]]
-match = "(?i:\\bHK[G]?\\d*\\b|Hong.*?Kong|\\bHKT\\b|\\bHKBN\\b|\\bHGC\\b|\\bWTT\\b|\\bCMI\\b|[^-]港)"
+match = "(?i:\\bHK[G]?\\d*\\b|Hong.*?Kong|香港|\\bHKT\\b|\\bHKBN\\b|\\bHGC\\b|\\bWTT\\b|\\bCMI\\b)"
 emoji = "🇭🇰"
 
 [[emoji]]
-match = "(?i:\\bTW[N]?\\d*\\b|Taiwan|新北|彰化|\\bCHT\\b|台湾|[^-]台|\\bHINET\\b)"
+match = "(?i:\\bTW[N]?\\d*\\b|Taiwan|新北|彰化|\\bCHT\\b|台湾|\\bHINET\\b)"
 emoji = "🇨🇳"
 
 [[emoji]]
-match = "(?i:\\bSG[P]?\\d*\\b|Singapore|新加坡|狮城|[^-]新)"
+match = "(?i:\\bSG[P]?\\d*\\b|Singapore|新加坡|狮城)"
 emoji = "🇸🇬"
 
 [[emoji]]
@@ -19,15 +19,15 @@ match = "(尼日利亚|Nigeria)"
 emoji = "🇳🇬"
 
 [[emoji]]
-match = "(?i:\\bJP[N]?\\d*\\b|Japan|Tokyo|Osaka|Saitama|日本|东京|大阪|埼玉|[^-]日)"
+match = "(?i:\\bJP[N]?\\d*\\b|Japan|Tokyo|Osaka|Saitama|日本|东京|大阪|埼玉)"
 emoji = "🇯🇵"
 
 [[emoji]]
-match = "(?i:(?<!North\\s)(\\bK[O]?R\\d*\\b|Korea|首尔|韩|韓))"
+match = "(?i:(?<!North\\s)(\\bK[O]?R\\d*\\b|Korea|首尔))"
 emoji = "🇰🇷"
 
 [[emoji]]
-match = "(?i:\\bUS[A]?\\d*\\b|America|United.*?States|美国|[^-]美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥)"
+match = "(?i:\\bUS[A]?\\d*\\b|America|United.*?States|美国|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥)"
 emoji = "🇺🇸"
 
 [[emoji]]
@@ -107,7 +107,7 @@ match = "(Czech|捷克)"
 emoji = "🇨🇿"
 
 [[emoji]]
-match = "(?i:\\bDE[U]?\\d*\\b|Germany|法兰克福|德(国|意志)|中德|^德$)"
+match = "(?i:\\bDE[U]?\\d*\\b|Germany|法兰克福|德(国|意志))"
 emoji = "🇩🇪"
 
 [[emoji]]
@@ -139,7 +139,7 @@ match = "(?i:\\bFR[A]?\\d*\\b|France|Paris|法国|巴黎)"
 emoji = "🇫🇷"
 
 [[emoji]]
-match = "(?i:\\bUK\\d*\\b|\\bGB[R]?\\d*\\b|England|United.*?Kingdom|London|英国|[^-]英|伦敦)"
+match = "(?i:\\bUK\\d*\\b|\\bGB[R]?\\d*\\b|England|United.*?Kingdom|London|英国|伦敦)"
 emoji = "🇬🇧"
 
 [[emoji]]
@@ -299,7 +299,7 @@ match = "(塞尔维亚|Serbia)"
 emoji = "🇷🇸"
 
 [[emoji]]
-match = "(?i:\\bRU[S]?\\d*\\b|Russia|Moscow|Petersburg|Siberia|伯力|莫斯科|圣彼得堡|西伯利亚|新西伯利亚|哈巴罗夫斯克|俄罗斯|[^-]俄)"
+match = "(?i:\\bRU[S]?\\d*\\b|Russia|Moscow|Petersburg|Siberia|伯力|莫斯科|圣彼得堡|西伯利亚|新西伯利亚|哈巴罗夫斯克|俄罗斯)"
 emoji = "🇷🇺"
 
 [[emoji]]

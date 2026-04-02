@@ -1,11 +1,11 @@
 (?i:Bandwidth|expire|流量|时间|应急|过期),🏳️‍🌈
-(?i:\bHK[G]?\d*\b|Hong.*?Kong|\bHKT\b|\bHKBN\b|\bHGC\b|\bWTT\b|\bCMI\b|[^-]港),🇭🇰
-(?i:\bTW[N]?\d*\b|Taiwan|新北|彰化|\bCHT\b|台湾|[^-]台|\bHINET\b),🇨🇳
-(?i:\bSG[P]?\d*\b|Singapore|新加坡|狮城|[^-]新),🇸🇬
+(?i:\bHK[G]?\d*\b|Hong.*?Kong|香港|\bHKT\b|\bHKBN\b|\bHGC\b|\bWTT\b|\bCMI\b),🇭🇰
+(?i:\bTW[N]?\d*\b|Taiwan|新北|彰化|\bCHT\b|台湾|\bHINET\b),🇨🇳
+(?i:\bSG[P]?\d*\b|Singapore|新加坡|狮城),🇸🇬
 (尼日利亚|Nigeria),🇳🇬
-(?i:\bJP[N]?\d*\b|Japan|Tokyo|Osaka|Saitama|日本|东京|大阪|埼玉|[^-]日),🇯🇵
-(?i:(?<!North\s)(\bK[O]?R\d*\b|Korea|首尔|韩|韓)),🇰🇷
-(?i:\bUS[A]?\d*\b|America|United.*?States|美国|[^-]美|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥),🇺🇸
+(?i:\bJP[N]?\d*\b|Japan|Tokyo|Osaka|Saitama|日本|东京|大阪|埼玉),🇯🇵
+(?i:(?<!North\s)(\bK[O]?R\d*\b|Korea|首尔)),🇰🇷
+(?i:\bUS[A]?\d*\b|America|United.*?States|美国|波特兰|达拉斯|俄勒冈|凤凰城|费利蒙|硅谷|拉斯维加斯|洛杉矶|圣何塞|圣克拉拉|西雅图|芝加哥),🇺🇸
 (Ascension|阿森松),🇦🇨
 (?i:\bUAE\b|Dubai|阿联酋|迪拜),🇦🇪
 (阿尔巴尼亚|Albania),🇦🇱
@@ -25,7 +25,7 @@
 (Costa Rica|哥斯达黎加),🇨🇷
 (塞浦路斯|Cyprus),🇨🇾
 (Czech|捷克),🇨🇿
-(?i:\bDE[U]?\d*\b|Germany|法兰克福|德(国|意志)|中德|^德$),🇩🇪
+(?i:\bDE[U]?\d*\b|Germany|法兰克福|德(国|意志)),🇩🇪
 (?i:\bD[N]?K\b|Denmark|丹麦),🇩🇰
 (爱沙尼亚|Estonia),🇪🇪
 (埃及|Egypt),🇪🇬
@@ -33,7 +33,7 @@
 (Europe|欧洲),🇪🇺
 (Finland|Helsinki|芬兰|赫尔辛基),🇫🇮
 (?i:\bFR[A]?\d*\b|France|Paris|法国|巴黎),🇫🇷
-(?i:\bUK\d*\b|\bGB[R]?\d*\b|England|United.*?Kingdom|London|英国|[^-]英|伦敦),🇬🇧
+(?i:\bUK\d*\b|\bGB[R]?\d*\b|England|United.*?Kingdom|London|英国|伦敦),🇬🇧
 (希腊|Greece),🇬🇷
 (格鲁吉亚|Georgia),🇬🇪
 (克罗地亚|Croatia),🇭🇷
@@ -73,7 +73,7 @@
 (葡萄牙|Portugal),🇵🇹
 (Romania|罗马尼亚),🇷🇴
 (塞尔维亚|Serbia),🇷🇸
-(?i:\bRU[S]?\d*\b|Russia|Moscow|Petersburg|Siberia|伯力|莫斯科|圣彼得堡|西伯利亚|新西伯利亚|哈巴罗夫斯克|俄罗斯|[^-]俄),🇷🇺
+(?i:\bRU[S]?\d*\b|Russia|Moscow|Petersburg|Siberia|伯力|莫斯科|圣彼得堡|西伯利亚|新西伯利亚|哈巴罗夫斯克|俄罗斯),🇷🇺
 (Arabia|沙特),🇸🇦
 (Sweden|瑞典),🇸🇪
 (斯洛文尼亚|Slovenia),🇸🇮
