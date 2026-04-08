@@ -1,0 +1,111 @@
+# Repository / Actions settings requirements:
+#
+# 1. Settings -> Actions -> General:
+#    - "Allow GitHub Actions to create and approve pull requests" MUST be enabled.
+#      This allows the GITHUB_TOKEN used by workflows to approve PRs created by Dependabot.
+#
+# 2. Settings -> General -> Pull Requests:
+#    - "Allow auto-merge" MUST be enabled.
+#      Required for `gh pr merge --auto` to work.
+#
+#    - "Allow squash merging" MUST be enabled (since this workflow uses `--squash`).
+#
+# 3. If using an organization repository:
+#    - Organization-level Actions settings MUST NOT disable PR approval by workflows.
+#      Repo-level settings are overridden by org-level policies.
+#
+# 4. Branch protection rules:
+#    - If "Require pull request reviews" is enabled,
+#      this workflow must successfully approve the PR before auto-merge can proceed.
+#
+#    - If "Require status checks" is enabled,
+#      auto-merge will wait until all required checks pass.
+#
+# Notes:
+# - Even if the workflow YAML is correct, missing any of the above settings
+#   will cause approve or auto-merge to fail silently.
+# - Dependabot-triggered workflows run with restricted permissions by default;
+#   the above settings are required to elevate GITHUB_TOKEN capabilities.
+
+name: Dependabot automated PR handling
+
+on:
+  pull_request:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  dependabot-auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.user.login == 'dependabot[bot]'
+
+    steps:
+      - name: Fetch Dependabot metadata
+        id: metadata
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # https://github.com/dependabot/fetch-metadata/issues/620
+      # - name: Approve patch/minor updates (Docker)
+      #   if: |
+      #     steps.metadata.outputs.package-ecosystem == 'docker' &&
+      #     (
+      #       steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+      #       steps.metadata.outputs.update-type == 'version-update:semver-minor'
+      #     )
+      #   run: gh pr review --approve "$PR_URL"
+      #   env:
+      #     PR_URL: ${{ github.event.pull_request.html_url }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Approve patch/minor updates (Github Actions)
+        if: |
+          steps.metadata.outputs.package-ecosystem == 'github-actions' &&
+          (
+            steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+            steps.metadata.outputs.update-type == 'version-update:semver-minor'
+          )
+        run: gh pr review --approve "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # https://github.com/dependabot/fetch-metadata/issues/620
+      # - name: Enable auto-merge for patch/minor updates (Docker)
+      #   if: |
+      #     steps.metadata.outputs.package-ecosystem == 'docker' &&
+      #     (
+      #       steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+      #       steps.metadata.outputs.update-type == 'version-update:semver-minor'
+      #     )
+      #   run: gh pr merge --auto --squash "$PR_URL"
+      #   env:
+      #     PR_URL: ${{ github.event.pull_request.html_url }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch/minor updates (Github Actions)
+        if: |
+          steps.metadata.outputs.package-ecosystem == 'github-actions' &&
+          (
+            steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+            steps.metadata.outputs.update-type == 'version-update:semver-minor'
+          )
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # - name: Enable auto-merge for GitHub Actions PRs (Docker & Github Actions)
+      #   if: |
+      #     (
+      #       steps.metadata.outputs.package-ecosystem == 'docker' ||
+      #       steps.metadata.outputs.package-ecosystem == 'github-actions'
+      #     ) &&
+      #     github.event.pull_request.base.repo.full_name == github.repository
+      #   run: gh pr merge --auto --squash "$PR_URL"
+      #   env:
+      #     PR_URL: ${{ github.event.pull_request.html_url }}
+      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
