@@ -89,7 +89,7 @@ jobs:
           touch "/tmp/digests-dockerhub/${digest#sha256:}"
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digest-dockerhub-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests-dockerhub/*
@@ -163,7 +163,7 @@ jobs:
           digest="${{ steps.build.outputs.digest }}"
           touch "/tmp/digests-ghcr/${digest#sha256:}"
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: digest-ghcr-${{ env.PLATFORM_PAIR }}
           path: /tmp/digests-ghcr/*
