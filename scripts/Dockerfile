@@ -1,4 +1,6 @@
-FROM alpine:3.16 AS builder
+ARG ALPINE_VERSION=3.24
+
+FROM alpine:${ALPINE_VERSION} AS builder
 LABEL maintainer="icasture@gmail.com"
 ARG THREADS="4"
 ARG SHA=""
@@ -6,7 +8,7 @@ ARG SHA=""
 # build minimized
 WORKDIR /
 RUN set -xe && \
-    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 && \
+    apk add --no-cache --virtual .build-tools git g++ build-base linux-headers cmake python3 py3-pip && \
     apk add --no-cache --virtual .build-deps curl-dev rapidjson-dev pcre2-dev yaml-cpp-dev && \
     git clone https://github.com/ftk/quickjspp --depth=1 && \
     cd quickjspp && \
@@ -40,15 +42,17 @@ COPY . /subconverter
 WORKDIR /subconverter
 
 RUN set -xe && \
-    [ -n "$SHA" ] && sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h; \
-    python3 -m ensurepip && \
-    python3 -m pip install gitpython && \
-    python3 scripts/update_rules.py -c scripts/rules_config.conf && \
+    if [ -n "$SHA" ]; then \
+        sed -i 's/\(v[0-9]\.[0-9]\.[0-9]\)/\1-'"$SHA"'/' src/version.h; \
+    fi && \
+    python3 -m venv /opt/build-venv && \
+    /opt/build-venv/bin/python -m pip install --no-cache-dir gitpython && \
+    /opt/build-venv/bin/python scripts/update_rules.py -c scripts/rules_config.conf && \
     cmake -DCMAKE_BUILD_TYPE=Release . && \
     make -j $THREADS
 
 # build final image
-FROM alpine:3.16
+FROM alpine:${ALPINE_VERSION}
 LABEL maintainer="icasture@gmail.com"
 
 RUN apk add --no-cache --virtual subconverter-deps pcre2 libcurl yaml-cpp
