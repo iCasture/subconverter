@@ -1,111 +1,173 @@
 # Repository / Actions settings requirements:
 #
-# 1. Settings -> Actions -> General:
-#    - "Allow GitHub Actions to create and approve pull requests" MUST be enabled.
-#      This allows the GITHUB_TOKEN used by workflows to approve PRs created by Dependabot.
+# 1. Settings -> Actions -> General -> Workflow permissions:
+#    - Enable "Allow GitHub Actions to create and approve pull requests" so the
+#      workflow's GITHUB_TOKEN can approve PRs opened by Dependabot.
 #
 # 2. Settings -> General -> Pull Requests:
-#    - "Allow auto-merge" MUST be enabled.
-#      Required for `gh pr merge --auto` to work.
+#    - Enable "Allow auto-merge" so `gh pr merge --auto` can queue a merge while
+#      required checks or reviews are pending.
+#    - Enable "Allow squash merging" because the workflow uses `--squash`.
 #
-#    - "Allow squash merging" MUST be enabled (since this workflow uses `--squash`).
+# 3. Configure the GitHub App used to request auto-merge:
+#    - Register a GitHub App and install it on this repository. Grant the App
+#      Contents, Pull requests, and Workflows repository permissions with
+#      Read and write access. Workflows access is needed to merge updates to
+#      files under .github/workflows/. The App follows the repository's merge
+#      rules.
+#    - Under Settings -> Secrets and variables -> Actions, add a repository
+#      variable named DEPENDABOT_MERGE_APP_CLIENT_ID with the App's Client ID.
+#      Generate an App private key and store the PEM contents in an Actions
+#      repository secret named DEPENDABOT_MERGE_APP_PRIVATE_KEY.
+#    - The workflow creates a short-lived token scoped to this repository
+#      after validation and approval. Only the merge command uses this token.
+#    - https://github.com/actions/create-github-app-token
+#    - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/making-authenticated-api-requests-with-a-github-app-in-a-github-actions-workflow
 #
-# 3. If using an organization repository:
-#    - Organization-level Actions settings MUST NOT disable PR approval by workflows.
-#      Repo-level settings are overridden by org-level policies.
+# 4. If using an organization repository:
+#    - The organization must allow workflows to approve pull requests.
+#      Organization policy takes precedence over the repository setting.
 #
-# 4. Branch protection rules:
-#    - If "Require pull request reviews" is enabled,
-#      this workflow must successfully approve the PR before auto-merge can proceed.
+# 5. Branch protection rules or rulesets for the default branch:
 #
-#    - If "Require status checks" is enabled,
-#      auto-merge will wait until all required checks pass.
+#    - If "Require status checks to pass before merging" is enabled, GitHub
+#      waits for all selected checks. Without required checks, GitHub can
+#      merge while optional CI is pending or failing if other rules are met.
+#      Independently, this workflow waits for the build.yml PR run to succeed
+#      before approving an eligible Dependabot PR.
+#
+#    - If approval requirements are configured under "Require a pull request
+#      before merging", GitHub waits until all applicable review requirements
+#      are met. This workflow submits one approval for the event's head commit
+#      before requesting squash auto-merge, even when GitHub requires no
+#      approvals. Additional approvals or Code Owner review may still be needed.
+#
+#      Recommended: If you require approvals, enable "Dismiss stale pull
+#      request approvals when new commits are pushed" so changes to the PR
+#      diff require fresh approval.
+#
+#    - If the PR is already mergeable, `gh pr merge --auto --squash` can
+#      merge it immediately. Otherwise, auto-merge waits for GitHub's
+#      applicable merge requirements to be met.
+#
+# 6. Settings -> Actions -> Policies:
+#    - Starting December 2, 2026, affected public repositories need an applicable
+#      Actions event policy that explicitly allows pull_request_target.
+#      a. Open the form to create an Actions policy.
+#      b. Name the policy "Allow Dependabot pull_request_target".
+#      c. Set "Enforcement status" to "Active".
+#      d. Under "Target workflows", choose "Add target" and add an include-by-path
+#         condition for .github/workflows/dependabot-pr-handling.yaml.
+#         Keep this workflow as the only target of the policy.
+#      e. Under "Workflow execution protections", enable "Restrict events" and
+#         select only pull_request_target. Leave "Restrict actors" and
+#         "Require lockfile" unchecked for this policy.
+#      f. Create the policy. If the workflow is blocked, check "Policy insights"
+#         under Settings -> Actions to identify the blocking policy.
+#    - If an applicable policy restricts actors, allow dependabot[bot] for this
+#      workflow and the App's bot account for the push-triggered workflows.
+#    - https://docs.github.com/en/actions/how-tos/administer/control-workflow-execution
+#    - https://docs.github.com/en/actions/reference/security/securely-using-pull_request_target
 #
 # Notes:
-# - Even if the workflow YAML is correct, missing any of the above settings
-#   will cause approve or auto-merge to fail silently.
-# - Dependabot-triggered workflows run with restricted permissions by default;
-#   the above settings are required to elevate GITHUB_TOKEN capabilities.
+# - pull_request_target runs this privileged job from the default branch.
+#   Keep PR code checkout and execution in the separate pull_request CI workflow.
+# - The built-in GITHUB_TOKEN reads PR validation and submits the approval.
+#   GitHub completes the App's auto-merge request when the merge rules are met.
+#   The resulting push to build/master triggers the regular build.yml and
+#   docker.yml workflows, including Docker image publishing.
+# - https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow#triggering-a-workflow-from-a-workflow
 
 name: Dependabot automated PR handling
 
-on:
-  pull_request:
+on: pull_request_target
 
-permissions:
-  contents: write
-  pull-requests: write
+permissions: {}
+
+concurrency:
+  group: dependabot-pr-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
 
 jobs:
   dependabot-auto-merge:
+    if: >-
+      github.event.pull_request.user.login == 'dependabot[bot]' &&
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.base.ref == github.event.repository.default_branch
     runs-on: ubuntu-latest
-    if: github.event.pull_request.user.login == 'dependabot[bot]'
+    timeout-minutes: 120
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+      PR_HEAD_REF: ${{ github.event.pull_request.head.ref }}
+      PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
 
     steps:
       - name: Fetch Dependabot metadata
         id: metadata
         uses: dependabot/fetch-metadata@v3
+
+      - name: Check whether the update can be merged automatically
+        id: eligibility
+        # fetch-metadata uses the ecosystem identifier from the Dependabot branch name.
+        if: >-
+          steps.metadata.outputs.package-ecosystem == 'github_actions' &&
+          (steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
+           steps.metadata.outputs.update-type == 'version-update:semver-minor')
+        run: echo "eligible=true" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for PR validation
+        if: steps.eligibility.outputs.eligible == 'true'
+        env:
+          VALIDATION_WORKFLOW: build.yml
+        run: |
+          # The pull_request and pull_request_target runs are created independently.
+          run_id=""
+          for _ in {1..12}; do
+            run_id=$(gh api --method GET \
+              "repos/$GH_REPO/actions/workflows/$VALIDATION_WORKFLOW/runs" \
+              -f event=pull_request -f branch="$PR_HEAD_REF" -f head_sha="$PR_HEAD_SHA" |
+              jq -r --arg repo "$GH_REPO" \
+                '[.workflow_runs[] | select(.head_repository.full_name == $repo)][0].id // empty')
+            if [[ -n "$run_id" ]]; then
+              break
+            fi
+            sleep 10
+          done
+          if [[ -z "$run_id" ]]; then
+            echo "::error::No $VALIDATION_WORKFLOW validation run found for $PR_HEAD_SHA."
+            exit 1
+          fi
+          gh run watch "$run_id" --exit-status --interval 15
+
+      - name: Approve the validated commit
+        if: steps.eligibility.outputs.eligible == 'true'
+        run: |
+          gh api --method POST "repos/$GH_REPO/pulls/$PR_NUMBER/reviews" \
+            -f event=APPROVE -f commit_id="$PR_HEAD_SHA" --silent
+
+      - name: Create a GitHub App token for merging
+        if: steps.eligibility.outputs.eligible == 'true'
+        id: merge-app-token
+        uses: actions/create-github-app-token@v3
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          client-id: ${{ vars.DEPENDABOT_MERGE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.DEPENDABOT_MERGE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-workflows: write
 
-      # https://github.com/dependabot/fetch-metadata/issues/620
-      # - name: Approve patch/minor updates (Docker)
-      #   if: |
-      #     steps.metadata.outputs.package-ecosystem == 'docker' &&
-      #     (
-      #       steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-      #       steps.metadata.outputs.update-type == 'version-update:semver-minor'
-      #     )
-      #   run: gh pr review --approve "$PR_URL"
-      #   env:
-      #     PR_URL: ${{ github.event.pull_request.html_url }}
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Approve patch/minor updates (Github Actions)
-        if: |
-          steps.metadata.outputs.package-ecosystem == 'github-actions' &&
-          (
-            steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-            steps.metadata.outputs.update-type == 'version-update:semver-minor'
-          )
-        run: gh pr review --approve "$PR_URL"
+      - name: Enable squash auto-merge
+        if: steps.eligibility.outputs.eligible == 'true'
         env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # https://github.com/dependabot/fetch-metadata/issues/620
-      # - name: Enable auto-merge for patch/minor updates (Docker)
-      #   if: |
-      #     steps.metadata.outputs.package-ecosystem == 'docker' &&
-      #     (
-      #       steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-      #       steps.metadata.outputs.update-type == 'version-update:semver-minor'
-      #     )
-      #   run: gh pr merge --auto --squash "$PR_URL"
-      #   env:
-      #     PR_URL: ${{ github.event.pull_request.html_url }}
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Enable auto-merge for patch/minor updates (Github Actions)
-        if: |
-          steps.metadata.outputs.package-ecosystem == 'github-actions' &&
-          (
-            steps.metadata.outputs.update-type == 'version-update:semver-patch' ||
-            steps.metadata.outputs.update-type == 'version-update:semver-minor'
-          )
-        run: gh pr merge --auto --squash "$PR_URL"
-        env:
-          PR_URL: ${{ github.event.pull_request.html_url }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      # - name: Enable auto-merge for GitHub Actions PRs (Docker & Github Actions)
-      #   if: |
-      #     (
-      #       steps.metadata.outputs.package-ecosystem == 'docker' ||
-      #       steps.metadata.outputs.package-ecosystem == 'github-actions'
-      #     ) &&
-      #     github.event.pull_request.base.repo.full_name == github.repository
-      #   run: gh pr merge --auto --squash "$PR_URL"
-      #   env:
-      #     PR_URL: ${{ github.event.pull_request.html_url }}
-      #     GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ steps.merge-app-token.outputs.token }}
+        run: gh pr merge "$PR_NUMBER" --auto --squash --match-head-commit "$PR_HEAD_SHA"
