@@ -10,17 +10,50 @@
 #    - Enable "Allow squash merging" because the workflow uses `--squash`.
 #
 # 3. Configure the GitHub App used to request auto-merge:
-#    - Register a GitHub App and install it on this repository. Grant the App
-#      Contents, Pull requests, and Workflows repository permissions with
-#      Read and write access. Workflows access is needed to merge updates to
-#      files under .github/workflows/. The App follows the repository's merge
-#      rules.
-#    - Under Settings -> Secrets and variables -> Actions, add a repository
-#      variable named DEPENDABOT_MERGE_APP_CLIENT_ID with the App's Client ID.
-#      Generate an App private key and store the PEM contents in an Actions
-#      repository secret named DEPENDABOT_MERGE_APP_PRIVATE_KEY.
-#    - The workflow creates a short-lived token scoped to this repository
-#      after validation and approval. Only the merge command uses this token.
+#    - In the account's Settings -> Developer settings -> GitHub Apps, select
+#      "New GitHub App" and configure these fields:
+#      - "GitHub App name": Enter a unique name, such as
+#        "iCasture Dependabot Auto Merge".
+#      - "Homepage URL": Enter the owning account's GitHub profile URL, such as
+#        https://github.com/iCasture.
+#      - "Callback URL" and "Setup URL": Leave both blank.
+#      - "Request user authorization (OAuth) during installation" and
+#        "Enable Device Flow": Leave both unchecked.
+#      - "Webhook" -> "Active": Uncheck "Active".
+#      - "Permissions" -> "Repository permissions": Set "Contents",
+#        "Pull requests", and "Workflows" to "Read & write". Workflows access
+#        is needed to merge updates to files under .github/workflows/. The App
+#        follows the repository's merge rules.
+#      - "Where can this GitHub App be installed?": Select "Only on this
+#        account" for repositories under the App's owning account. Select
+#        "Any account" if the repositories have different owners.
+#      - Click "Create GitHub App".
+#    - Install the App on each repository that will use it:
+#      - In the App settings, click "Install App", then click "Install" next
+#        to the repository owner's account.
+#      - Choose "Only select repositories" and select the intended repositories
+#        for that owner. If the repositories have different owners, repeat the
+#        installation for each owner and select their intended repositories.
+#      - Review the permissions and click "Install". If the App is already
+#        installed, go to "GitHub Settings" -> "Integrations" -> "Applications"
+#        -> "Installed GitHub Apps" -> "Configure" and add any
+#        additional repositories under "Repository access", then save.
+#    - In the App settings, copy the value labeled "Client ID". The numeric
+#      "App ID" is a separate identifier. This workflow uses "Client ID".
+#    - In the App settings, go to "Credentials" -> "Key pairs" and click
+#      "New key" to download the private key as a .pem file.
+#    - In each repository using the App, open Settings -> Secrets and variables
+#      -> Actions. Under Variables, create the repository variable
+#      DEPENDABOT_MERGE_APP_CLIENT_ID with the App's Client ID. Under Secrets,
+#      create the repository secret DEPENDABOT_MERGE_APP_PRIVATE_KEY with the
+#      full PEM text, including the BEGIN and END lines and original line breaks.
+#      Repositories sharing one App can use the same Client ID and PEM.
+#    - After validation and approval, the workflow creates a short-lived token
+#      scoped to the current repository. Only the merge command uses this token.
+#      The App's private key can issue tokens for repositories the App can access.
+#      If repositories need independent permissions, create a separate App for
+#      each repository and install each App only on its own repository.
+#    - https://docs.github.com/en/apps/using-github-apps/installing-your-own-github-app
 #    - https://github.com/actions/create-github-app-token
 #    - https://docs.github.com/en/apps/creating-github-apps/authenticating-with-a-github-app/making-authenticated-api-requests-with-a-github-app-in-a-github-actions-workflow
 #
